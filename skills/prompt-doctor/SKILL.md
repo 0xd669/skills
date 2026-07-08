@@ -4,11 +4,12 @@ description: >-
   Writes, rewrites, diagnoses, and improves any LLM prompt with minimal,
   high-signal edits. Use when the user wants to create a new prompt from
   scratch, review or fix a prompt that produces poor output, simplify or
-  tighten instructions, add security guardrails, port a prompt between models,
-  or expand an existing prompt. Covers system prompts, agent instructions,
-  CLAUDE.md rules, SKILL.md prompt bodies, chat templates, structured-output
-  prompts, RAG context templates, and prompt strings embedded in code. Also use
-  when editing any file whose primary content is LLM instructions.
+  tighten instructions, restructure a long prompt, port a prompt between
+  models, or expand an existing prompt. Covers system prompts, agent
+  instructions, CLAUDE.md rules, SKILL.md prompt bodies, chat templates,
+  structured-output prompts, RAG context templates, and prompt strings embedded
+  in code. Also use when editing any file whose primary content is LLM
+  instructions.
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion
 ---
 
@@ -30,37 +31,23 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
 
 <workflow>
 1. Receive the prompt from inline text, a file path, or recent conversation context. If no prompt is provided, ask the user to provide one and **stop**.
-2. Identify the prompt type, core intent, and scale (micro: under ~10 lines / standard / macro: 50+ lines, multi-section).
+2. Identify the prompt type and core intent.
 3. Identify everything that must be preserved exactly (variables, delimiters, format constraints, tone).
-4. Diagnose only the defects that are actually present.
+4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>. Use <analytical_lenses> as supplementary review viewpoints.
 5. Decide rewrite scope:
    - **None:** already fit for purpose -- optional polish only
    - **Light:** local wording, ordering, or format fixes
    - **Standard:** multiple related fixes or section-level restructuring
-   - **Heavy:** full rewrite due to contradictions, structural collapse, or high operational risk
+   - **Heavy:** full rewrite due to contradictions, structural collapse, or defects pervading most sections
    When borderline, choose the lower scope unless the prompt would likely fail in real use.
 6. Apply the rewrite:
    - Fix concrete defects, not hypothetical ones.
    - Replace vague instructions with testable wording.
    - Keep related constraints together.
    - Use stronger structure only when it improves compliance.
-   - For micro-prompts, stay concise even when making fixes.
 7. Deliver the improved prompt if changes are needed.
-8. Briefly explain the changes that matter most.
+8. Briefly explain the changes that matter most, using <analytical_lenses> to name the mechanism when it strengthens the explanation.
 </workflow>
-
-<reference_routing>
-Read [framework_reference.md](framework_reference.md) only when:
-- the prompt is long, messy, or structurally complex
-- severity or rewrite scope is unclear
-- the user asks for detailed diagnosis or rationale
-- you need a deeper defect checklist before rewriting
-
-Read [security_reference.md](security_reference.md) only when:
-- the prompt is a system prompt or agent instruction
-- the prompt handles untrusted user input, documents, URLs, or tool output
-- prompt leakage, hierarchy, or injection boundaries are relevant
-</reference_routing>
 
 <input_handling>
 - If a file path is provided, read it first.
@@ -68,6 +55,58 @@ Read [security_reference.md](security_reference.md) only when:
 - If the user supplies failing outputs or evaluation criteria, treat them as evidence and acceptance criteria.
 - If multiple prompts are provided, fully handle the first one, then briefly acknowledge the rest without a full optimization pass. Do not batch-process all prompts in one response.
 </input_handling>
+
+<defect_taxonomy>
+Use these categories to organize findings -- not a checklist to exhaust.
+
+**Wording defects**
+- Ambiguous instruction: a directive that two reasonable readers would interpret differently
+- Inconsistent terminology: alternating names for the same concept (e.g., "ticket" and "issue")
+- Untestable quality target: "write good output" vs "output must include X, Y, Z"
+- Generic role label: "helpful assistant" instead of a domain-specific practitioner identity
+
+**Structural defects**
+- Distinct concerns run together with no section boundaries
+- Related constraints scattered across unrelated sections
+- Edge cases or exceptions placed before the core behavior they modify
+- Contradictions between sections (check: does section A promise what section B forbids?)
+- Information does not flow top-down (identity -> task -> constraints -> format)
+- A section that can be removed without changing behavior (filler)
+
+**Compliance defects**
+- Negative-heavy instructions: more than half of directives say what NOT to do
+- Rigid output constraints (exact counts, strict formats) with no scaffolding or example
+- Format rules separated from their exceptions by unrelated content
+- Critical constraints buried in the middle 60% of the prompt body, where LLM attention is weakest
+- The same rule repeated in multiple places as a substitute for one well-placed statement
+
+**Prompt-type failure modes**
+
+| Prompt type | Common failure mode |
+|-------------|-------------------|
+| RAG | Context and instruction blur -- model treats retrieved content as directives |
+| Structured output | Schema rules unclear or separated from the output specification |
+| Agent / tool-use | Missing fallback behavior when tools fail or return unexpected results |
+| System prompt | Instructions and interpolated data are not clearly delimited -- the model treats data content as directives |
+| Multi-turn chat | State assumptions from earlier turns not validated in later turns |
+</defect_taxonomy>
+
+<analytical_lenses>
+Use these as review viewpoints during diagnosis and to explain WHY a change matters -- not as mandatory categories.
+
+| Lens | Covers |
+|------|--------|
+| CogPsy | Attention allocation, ordering effects (primacy/recency), chunking, cognitive load |
+| InfoDes | Section labeling, progressive disclosure, visual hierarchy, scanability |
+| ReqEng | Testable acceptance criteria, constraint completeness, edge case coverage |
+| InsDes | Example scaffolding, learning sequence, worked examples vs abstract rules |
+| TechCom | Parallel phrasing, active voice, sentence-level precision, term consistency |
+| Rhetoric | Persona credibility, tone calibration, audience-appropriate register |
+| Pragma | Speech-act clarity (is this a command, suggestion, or observation?), redundancy, ambiguity |
+| BehSci | Default bias, loss framing, anchoring effects in examples |
+
+When citing a lens in the diagnosis, include one sentence explaining the specific mechanism. Example: "CogPsy (primacy effect): the most critical constraint appears at line 47 of 60, where attention is lowest."
+</analytical_lenses>
 
 <output_contract>
 Keep the response useful and lightweight by default.
