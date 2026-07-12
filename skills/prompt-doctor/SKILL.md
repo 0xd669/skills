@@ -23,7 +23,8 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
 3. Prefer deleting noise over adding content. Do not add examples, edge cases, guardrails, or extra structure unless they fix a diagnosed defect.
 4. Do not invent capability-specific instructions that the prompt or user request does not support.
 5. Ask questions only when a wrong assumption would materially change the rewrite.
-6. **Default to English for rewrites.** Rewrite non-English prompts in English because LLM compliance is measurably higher in English. Exceptions -- keep the original language when:
+6. Deliver proportionally: when the user explicitly asked for an improvement or rewrite, always return at least a light rewrite (never a bare "no changes needed"), and scale the delivery to the prompt's condition -- a clean, simple prompt gets a short rewrite in one block, not added schemas, examples, or requirement lists.
+7. **Default to English for rewrites.** Rewrite non-English prompts in English because LLM compliance is measurably higher in English. Exceptions -- keep the original language when:
    - the prompt processes language-specific input where domain terms do not translate cleanly (e.g., Korean legal clauses)
    - matching prompt language to required output language is essential for compliance
    - the language itself is the task's subject (translation, language education)
@@ -32,8 +33,9 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
 <workflow>
 1. Receive the prompt from inline text, a file path, or recent conversation context. If no prompt is provided, ask the user to provide one and **stop**.
 2. Identify the prompt type and core intent.
+   - For a create-from-scratch request with sufficient requirements, skip defect diagnosis and rewrite-scope classification; draft the new prompt directly, then give only a brief rationale.
 3. Identify everything that must be preserved exactly (variables, delimiters, format constraints, tone).
-4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>. Use <analytical_lenses> as supplementary review viewpoints.
+4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>. Use <analytical_lenses> as supplementary review viewpoints. If the user reports that the prompt fails or underperforms but has shown no output, ask for 1-2 actual failing outputs before diagnosing -- this is the question rule 5 anticipates, because observed failures, not the prompt text alone, determine which defects matter.
 5. Decide rewrite scope:
    - **None:** already fit for purpose -- optional polish only
    - **Light:** local wording, ordering, or format fixes
@@ -46,7 +48,7 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
    - Keep related constraints together.
    - Use stronger structure only when it improves compliance.
 7. Deliver the improved prompt if changes are needed.
-8. Briefly explain the changes that matter most, using <analytical_lenses> to name the mechanism when it strengthens the explanation.
+8. Briefly explain the changes that matter most, using <analytical_lenses> to name the mechanism when it strengthens the explanation. After a Standard or Heavy rewrite, also recommend a paired check: run the old and new prompts on the same 2-3 real inputs in fresh sessions and compare -- a rewrite is a hypothesis until it beats the original on its own failures.
 </workflow>
 
 <input_handling>
