@@ -35,7 +35,7 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
 2. Identify the prompt type and core intent.
    - For a create-from-scratch request with sufficient requirements, skip defect diagnosis and rewrite-scope classification; draft the new prompt directly, then give only a brief rationale.
 3. Identify everything that must be preserved exactly (variables, delimiters, format constraints, tone).
-4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>. Use <analytical_lenses> as supplementary review viewpoints. If the user reports that the prompt fails or underperforms but has shown no output, ask for 1-2 actual failing outputs before diagnosing -- this is the question rule 5 anticipates, because observed failures, not the prompt text alone, determine which defects matter.
+4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>. If the user reports that the prompt fails or underperforms but has shown no output, ask for 1-2 actual failing outputs before diagnosing -- this is the question rule 5 anticipates, because observed failures, not the prompt text alone, determine which defects matter.
 5. Decide rewrite scope:
    - **None:** already fit for purpose -- optional polish only
    - **Light:** local wording, ordering, or format fixes
@@ -48,7 +48,7 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
    - Keep related constraints together.
    - Use stronger structure only when it improves compliance.
 7. Deliver the improved prompt if changes are needed.
-8. Briefly explain the changes that matter most, using <analytical_lenses> to name the mechanism when it strengthens the explanation. After a Standard or Heavy rewrite, also recommend a paired check: run the old and new prompts on the same 2-3 real inputs in fresh sessions and compare -- a rewrite is a hypothesis until it beats the original on its own failures.
+8. Briefly explain the changes that matter most. After a Standard or Heavy rewrite, also recommend a paired check: run the old and new prompts on the same 2-3 real inputs in fresh sessions and compare -- a rewrite is a hypothesis until it beats the original on its own failures.
 </workflow>
 
 <input_handling>
@@ -93,22 +93,6 @@ Use these categories to organize findings -- not a checklist to exhaust.
 | Multi-turn chat | State assumptions from earlier turns not validated in later turns |
 </defect_taxonomy>
 
-<analytical_lenses>
-Use these as review viewpoints during diagnosis and to explain WHY a change matters -- not as mandatory categories.
-
-| Lens | Covers |
-|------|--------|
-| CogPsy | Attention allocation, ordering effects (primacy/recency), chunking, cognitive load |
-| InfoDes | Section labeling, progressive disclosure, visual hierarchy, scanability |
-| ReqEng | Testable acceptance criteria, constraint completeness, edge case coverage |
-| InsDes | Example scaffolding, learning sequence, worked examples vs abstract rules |
-| TechCom | Parallel phrasing, active voice, sentence-level precision, term consistency |
-| Rhetoric | Persona credibility, tone calibration, audience-appropriate register |
-| Pragma | Speech-act clarity (is this a command, suggestion, or observation?), redundancy, ambiguity |
-| BehSci | Default bias, loss framing, anchoring effects in examples |
-
-When citing a lens in the diagnosis, include one sentence explaining the specific mechanism. Example: "CogPsy (primacy effect): the most critical constraint appears at line 47 of 60, where attention is lowest."
-</analytical_lenses>
 
 <output_contract>
 Keep the response useful and lightweight by default.
