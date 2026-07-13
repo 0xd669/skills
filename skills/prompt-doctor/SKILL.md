@@ -34,8 +34,11 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
 1. Receive the prompt from inline text, a file path, or recent conversation context. If no prompt is provided, ask the user to provide one and **stop**.
 2. Identify the prompt type and core intent.
    - For a create-from-scratch request with sufficient requirements, skip defect diagnosis and rewrite-scope classification; draft the new prompt directly, then give only a brief rationale.
+   - If missing requirements would materially change a new prompt—especially its decision use, criteria, allowed evidence, or constraints—ask only the missing questions and stop before drafting.
 3. Identify everything that must be preserved exactly (variables, delimiters, format constraints, tone).
-4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>. If the user reports that the prompt fails or underperforms but has shown no output, ask for 1-2 actual failing outputs before diagnosing -- this is the question rule 5 anticipates, because observed failures, not the prompt text alone, determine which defects matter.
+4. Diagnose only the defects that are actually present, classified against <defect_taxonomy>.
+   - For an existing prompt, proceed when its text exposes concrete, actionable defects; failing outputs are useful evidence, not a prerequisite.
+   - Ask for 1-2 failing outputs only when the prompt text supports multiple materially different diagnoses or fixes. Otherwise, provide the best-supported rewrite and optionally invite examples for later refinement.
 5. Decide rewrite scope:
    - **None:** already fit for purpose -- optional polish only
    - **Light:** local wording, ordering, or format fixes
@@ -47,6 +50,8 @@ Default behavior: diagnose first, then rewrite. Keep the response lightweight un
    - Replace vague instructions with testable wording.
    - Keep related constraints together.
    - Use stronger structure only when it improves compliance.
+   - When consistent judgment across multiple items is central to the task, add a compact ordered procedure before the output format: define the review units, examine or group them systematically, apply explicit criteria, rank or filter supported results, then render the requested output. Keep it proportional.
+   - For grounded tasks, define the allowed evidence boundary, require traceability when relevant, and specify what to return when support is missing, ambiguous, conflicting, or insufficient. Treat requested counts as maxima when an exact quota could force unsupported content.
 7. Deliver the improved prompt if changes are needed.
 8. Briefly explain the changes that matter most. After a Standard or Heavy rewrite, also recommend a paired check: run the old and new prompts on the same 2-3 real inputs in fresh sessions and compare -- a rewrite is a hypothesis until it beats the original on its own failures.
 </workflow>
