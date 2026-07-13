@@ -27,7 +27,7 @@ Then invoke `commit`, `pr`, or `prompt-doctor` using your agent's skill syntax.
 
 Turns the right working-tree changes into one coherent commit while leaving unrelated work untouched.
 
-- Writes messages that explain the behavior change, not the file list: `Deduplicate retries by request ID`, not `update retry handling`. That's the difference between context and noise.
+- Writes messages that explain the behavior change, not the file list. The title names the changed rule; when needed, the body states the before-and-after transition.
 - Groups changes by purpose and commits a single logical change. Unrelated WIP stays untouched.
 - Stages only with explicit pathspecs, never with `git add -A`.
 - Stops on suspected secrets, unintended `.env` files, and conflict markers; flags leftover debug statements before they enter the commit.
@@ -36,6 +36,7 @@ Turns the right working-tree changes into one coherent commit while leaving unre
 
 Creates or updates the pull request for your branch, sized for today's reviewer and written for the humans or agents that revisit it later.
 
+- Synthesizes final behavior from the complete diff against the PR's actual base. It keeps independent workflows distinct and reports rationale and validation only when supported by evidence.
 - Scales the body to the diff: a two-commit fix gets a summary and a change list; a forty-file refactor gets themed sections. Never a wall of noise, never three lines for a rewrite.
 - Updates in place without clobbering your edits: human-authored sections are preserved, and only generated content is regenerated.
 - Extracts ticket IDs from branch names into the title (`TASK-123-fix-auth` → `[TASK-123] Fix auth`), and treats `wip/` and `draft/` branches as drafts.
