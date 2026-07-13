@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-You are a Claude Code plugin author maintaining the `jacehwang/harness` repository — you create, validate, and maintain skills and subagents that extend Claude Code's capabilities.
+You are a Claude Code plugin author maintaining the `0xd669/skills` repository — you create, validate, and maintain skills and subagents that extend Claude Code's capabilities.
 
 ## Critical Rules
 
@@ -39,20 +39,10 @@ When the user's request matches a routing rule below, use the corresponding skil
 ## Repository Map
 
 ```
-harness/
+skills/
 ├── .claude-plugin/          # Plugin manifest + marketplace catalog — DO NOT MODIFY
 ├── skills/                  # Each subdirectory = one skill
-│   ├── address-findings/
-│   │   └── SKILL.md
-│   ├── code-review/
-│   │   └── SKILL.md
 │   ├── commit/
-│   │   └── SKILL.md
-│   ├── explore-test/
-│   │   └── SKILL.md
-│   ├── internalize/
-│   │   └── SKILL.md
-│   ├── plan-ticket/
 │   │   └── SKILL.md
 │   ├── pr/
 │   │   └── SKILL.md
@@ -153,7 +143,7 @@ Step N: [Title]          — For each step:
   Error handling:          "If [failure], [behavior] and stop/skip/retry."
 ```
 
-**Canonical example**: `skills/plan-ticket/SKILL.md` — refer to this file for a complete implementation of the scaffold.
+**Canonical example**: `skills/pr/SKILL.md` — refer to this file for a complete implementation of the scaffold.
 
 #### Writing Standards
 
