@@ -1,146 +1,127 @@
 ---
 name: commit
-description: Creates a git commit with proper message formatting. Use when committing staged changes with a descriptive commit message.
-allowed-tools: Bash(git add:*) Bash(git status:*) Bash(git diff:*) Bash(git commit:*) Bash(git log:*) AskUserQuestion
+description: >-
+  Creates and executes one coherent git commit from staged or selected working-tree
+  changes. Use when the user asks to commit changes, stage and commit a logical
+  change, or create a git commit with an appropriate message. Do not use for a
+  draft-only message request or an operation that only pushes existing commits.
+allowed-tools: Bash(git add:*) Bash(git status:*) Bash(git diff:*) Bash(git commit:*) Bash(git log:*) Bash(git ls-files:*) Bash(git branch:*) AskUserQuestion
 ---
 
-You are a technical communicator applying dissemination science to version control — you curate changesets and craft commit messages that maximize information fidelity across reviewers and future maintainers.
-
-You MUST analyze the current changes, stage relevant files, compose a concise commit message, and execute the commit. Commit messages MUST be in English. All other user-facing output MUST be in 한국어.
+Create exactly one coherent commit while preserving changes outside its intended
+scope. Write the commit message in English and communicate with the user in their
+language. Follow explicit user instructions and applicable repository guidance
+before the defaults below.
 
 ## Repository Context
 
-- Current git status: !`git status`
-- Current diff (staged + unstaged): !`git diff HEAD`
+- Status: !`git status --short`
+- Staged changes: !`git diff --cached`
+- Unstaged changes: !`git diff`
 - Untracked files: !`git ls-files --others --exclude-standard`
+- Unmerged files: !`git diff --name-only --diff-filter=U`
 - Current branch: !`git branch --show-current`
 - Recent commits: !`git log --oneline -10`
 
-## Edge Case Guards
+## 1. Define the Commit Scope
 
-Before proceeding to Step 1, scan repository context for blocking conditions:
+1. If the worktree and index contain no changes, tell the user there is nothing
+   to commit and stop.
+2. Select the target changes in this order:
+   - If the user named files or a logical change, use that scope. If unrelated
+     changes are already staged, explain the conflict and ask how to proceed
+     before changing the index.
+   - Otherwise, if staged changes exist, treat the staged diff as the complete
+     target. Leave unstaged and untracked changes untouched.
+   - Otherwise, group unstaged and untracked changes by purpose. If they form one
+     clear logical change, use that group. If there are multiple plausible groups
+     or a file's inclusion is ambiguous, present the groups and ask which one to
+     commit.
+3. Judge cohesion by behavior and purpose, not by file count alone. Keep tests,
+   documentation, and configuration with the implementation they directly
+   support.
 
-| Condition | Detection | Action |
-|-----------|-----------|--------|
-| No changes | Empty diff, clean git status, no untracked files | Inform the user there is nothing to commit and **stop** |
-| Merge conflict markers | `<<<<<<<`, `=======`, `>>>>>>>` in diff output | List conflicted files, inform the user to resolve conflicts first, and **stop** |
-| Secrets or credentials | `.env` files, patterns like `API_KEY=`, `SECRET=`, `password=`, private keys in diff | List suspect files/lines, warn the user, and **stop** |
+## 2. Prepare the Index
 
-## Step 1: Assess Changes
+When the exact target is not already staged, stage only its files with explicit
+pathspecs:
 
-**Input:** Repository context above.
-**Output:** Change assessment — categorized file list + logical unit analysis.
+```bash
+git add -- "path/with[brackets]/file.ts" "another path/file.md"
+```
 
-1. Categorize each change: already staged, unstaged modification, or untracked file.
-2. Analyze whether changes span **multiple logical units** (e.g., bug fix + refactoring + new feature, or changes to unrelated modules).
-3. If changes span 2+ distinct logical units, present the groupings to the user via `AskUserQuestion`:
-   - Option 1: Commit all together as a single commit *(proceed normally)*
-   - Option 2: Commit only one logical group *(specify which files to stage)*
-   - Wait for the user's response before proceeding.
-4. If changes affect **20+ files**, suggest splitting into smaller commits via `AskUserQuestion` with the same options as above.
+Use `--` before paths and quote paths containing spaces, brackets, parentheses,
+wildcards, or other shell-special characters. Include untracked files only when
+they are part of the target change. Exclude local configuration, credentials,
+temporary files, logs, and build artifacts unless repository guidance explicitly
+tracks them and they are required by the change. If a target file mixes relevant
+and unrelated hunks, stage only the relevant hunks; ask the user before staging
+the whole file when safe partial staging is not practical.
 
-## Step 2: Stage Files
+After staging, re-run `git status --short` and `git diff --cached`. The staged diff
+is now the sole source of truth for the commit.
 
-**Input:** Change assessment from Step 1 (+ user's grouping decision if applicable).
-**Output:** Staged fileset ready for commit.
+## 3. Review the Staged Diff
 
-### Staging Strategy
+Stop before committing when any blocking condition is present:
 
-Check whether files are already staged (`git diff --cached` is non-empty):
+| Condition | Required action |
+|-----------|-----------------|
+| Empty staged diff | Tell the user there is nothing staged for this commit. |
+| Unmerged entries or real conflict markers | List the affected files and ask the user to resolve them. |
+| Suspected secret, credential, private key, or unintended `.env` file | Identify the location without repeating the value; ask the user to remove it or confirm it is non-secret test data. |
+| Unclear or unrelated staged content | Explain the mismatch and ask how to scope the commit. |
 
-- **Already staged files exist** → Respect the user's intent. Commit only the staged files. Do NOT stage additional files unless the user explicitly requests it.
-- **No staged files** → Stage all files that belong to the current logical change (or the user-selected group from Step 1).
+Also inspect added lines for accidental debug statements, generated output, logs,
+and unexplained `TODO` or `FIXME` markers. Ask only when an item appears unintended;
+do not treat every occurrence as an error.
 
-### Staging Rules
+## 4. Compose the Message
 
-1. Stage unstaged modifications that belong to the target change.
-2. Review untracked files against the inclusion criteria below.
-3. **Quote paths containing special characters** (parentheses, brackets, spaces) with double quotes: `git add "path/with[brackets]/file.ts"`.
+First follow an explicit repository commit convention. Use recent commit history
+as supporting evidence, not as a replacement for written guidance.
 
-### Untracked File Criteria
+When no convention is defined, use these defaults:
 
-Ask yourself: "Is this file part of the logical change being committed?"
+- Start the subject with an imperative English verb such as `Add`, `Fix`,
+  `Update`, `Remove`, or `Refactor`.
+- Describe the primary change, omit a trailing period, and keep the subject at
+  50 characters or fewer.
+- Add a body only when the motivation, important tradeoff, breaking behavior, or
+  migration detail is not clear from the subject and diff.
+- Separate the body from the subject with a blank line, explain why the change
+  was made, and wrap body lines at 72 characters.
 
-| Include | Exclude |
-|---------|---------|
-| New source files related to the change | Build artifacts |
-| Configuration files | Temporary files |
-| Documentation | `.env` files |
-| Files under `.claude/` directory (always) | Generated output |
+Do not force a body based only on the number of changed files.
 
-If the decision is ambiguous for a specific file, inform the user and ask whether to include it, then **stop** until the user responds.
+## 5. Verify and Commit
 
-## Step 3: Compose Message
+Before executing the commit, review `git diff --cached` one final time and verify:
 
-**Input:** Staged diffs — run `git diff --cached` after Step 2 completes.
-**Output:** Complete commit message (subject + body if required).
+1. Every staged change belongs to the selected scope.
+2. The message describes the primary staged change without claiming unstaged work.
+3. The staged diff still passes the safety review above.
 
-### Subject Line
+For a subject-only message, run:
 
-**The subject line MUST be 50 characters or fewer.** Use a short verb (Add, Fix, Update, Remove, Refactor) followed by a concise noun phrase.
+```bash
+git commit -m "Subject line"
+```
 
-Good examples:
-- "Add user auth module" (20)
-- "Fix login form validation" (25)
-- "Refactor database connection pool" (34)
+For a message with a body, use separate `-m` arguments so Git inserts a real blank
+line. Put real line breaks in a long body; never encode them as literal `\n` text.
 
-Compression examples:
-- "Implement investment proposal management feature" (48) → "Add proposal management" (22)
-- "Reorganize skills into subdirectory and improve metadata" (56) → "Reorganize skills directory" (26)
+```bash
+git commit \
+  -m "Subject line" \
+  -m "Explain why this change was necessary and include any important
+migration detail."
+```
 
-### Subject Line Rules
+If the commit fails, inspect the error and current status before taking further
+action. If a hook modified files or the index, review the new staged diff and
+revalidate the message before retrying. Do not retry a failure blindly.
 
-1. Describe *what* changed (put *why* in the body).
-2. Use only essential words — drop articles (the, a) and prepositions (for the, in the).
-3. Start directly with the verb. Conventional commit prefixes (feat:, fix:), branch names, and ticket numbers are excluded.
-4. If the subject line exceeds 50 characters, remove adjectives and compress the noun phrase until it fits.
-
-### Body Rules
-
-Add a body when **any** of the following conditions are met:
-
-| Condition | Rationale |
-|-----------|-----------|
-| 3+ files changed | Reviewers need a summary of scope |
-| Breaking change | Must explain what breaks and migration path |
-| File deletions included | Must explain why files were removed |
-| Subject line alone cannot explain *why* | The commit history loses context without it |
-
-Body format:
-1. Leave one blank line after the subject line.
-2. Explain *why* the change was made.
-3. Wrap body lines at 72 characters.
-
-When none of the conditions above are met, omit the body.
-
-## Step 4: Verify
-
-**Input:** Staged files from Step 2, composed message from Step 3.
-**Output:** Verification result — proceed or revise.
-
-Run `git diff --cached` and perform these checks:
-
-1. **Message–diff alignment:** Confirm the subject line accurately describes the staged changes. If the message mentions something not in the diff (or misses the primary change), revise the message.
-2. **Unintended file check:** Scan for debug artifacts (`console.log`, `debugger`, `print(` used for debugging, `TODO/FIXME` added in this diff), log files, or build outputs in the staged diff. If found, warn the user via `AskUserQuestion` with options to proceed or unstage.
-3. **Staged diff is non-empty:** If `git diff --cached` is empty after staging, inform the user and **stop**.
-
-## Step 5: Commit
-
-**Input:** Verified message from Step 4, staged files from Step 2.
-**Output:** Completed git commit.
-
-1. Run `git commit` with the composed message. For subject-only commits (no body), use a simple `-m "Subject line"`. For commits with a body, **use a HEREDOC to preserve real newlines** — `-m "text\nmore text"` passes literal `\n`, not line breaks.
-
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   Subject line here
-
-   Body paragraph here, wrapped at 72 characters.
-   EOF
-   )"
-   ```
-
-   Content inside the HEREDOC MUST be flush-left (no leading spaces). Indentation becomes part of the commit message.
-
-2. If the commit fails, report the full error message to the user and **stop**.
-3. After a successful commit, display the commit hash and subject line as confirmation.
+After success, run `git log -1 --format='%h %s'` and `git status --short`. Report
+the commit hash and subject, then mention any remaining unstaged or untracked
+changes. Do not push unless the user separately requested it.
