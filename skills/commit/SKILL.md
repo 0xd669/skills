@@ -78,28 +78,52 @@ do not treat every occurrence as an error.
 
 ## 4. Compose the Message
 
+Treat the message as a compact, standalone explanation for a human or coding
+agent that may not inspect the diff. Prioritize the changed behavior or system
+rule over author activity, file lists, and implementation inventory. Ground every
+claim in the staged changes and relevant repository context.
+
 First follow an explicit repository commit convention. Use recent commit history
-as supporting evidence, not as a replacement for written guidance.
+as supporting evidence, not as a replacement for written guidance. Then distill:
+
+1. The primary before-and-after change in behavior, capability, data flow, or
+   system rule.
+2. The single core intuition that explains most of the staged diff.
+3. Only the context needed to prevent a reader from forming the wrong mental
+   model.
 
 When no convention is defined, use these defaults:
 
-- Start the subject with an imperative English verb such as `Add`, `Fix`,
-  `Update`, `Remove`, or `Refactor`.
-- Describe the primary change, omit a trailing period, and keep the subject at
-  50 characters or fewer.
-- Add a body only when the motivation, important tradeoff, breaking behavior, or
-  migration detail is not clear from the subject and diff.
-- Separate the body from the subject with a blank line, explain why the change
-  was made, and wrap body lines at 72 characters.
+- **Title (subject):** Start with an imperative English verb. Name the affected
+  concept and its changed behavior or governing rule, not merely the editing
+  action or a broad benefit. Prefer `Deduplicate retries by request ID` to
+  `Update retry handling`. Omit a trailing period and keep the title concise; do
+  not exceed 72 characters.
+- **Description (body):** Add one when the title alone does not give an
+  unfamiliar reader the essential before-and-after model. Lead with the core
+  intuition in plain language, usually as one short paragraph. Explain what now
+  happens differently before discussing motivation or implementation details.
+- Use one minimal toy example when concrete input, state, or output makes a
+  non-obvious rule faster to understand. For example: `Attempts r1, r1, r2 now
+  create two jobs instead of three because request ID defines identity.` Keep
+  the example faithful to the diff; do not invent unsupported behavior.
+- After the intuition, include motivation, an important constraint or tradeoff,
+  breaking behavior, or migration guidance only when it materially helps the
+  reader understand or act on the change.
+- Separate the description from the title with a blank line and wrap body lines
+  at 72 characters.
 
-Do not force a body based only on the number of changed files.
+Do not turn the description into a file-by-file or hunk-by-hunk summary. Omit
+secondary edits, routine tests, and mechanical details unless they change the
+core mental model. Do not force a body or toy example based only on change size.
 
 ## 5. Verify and Commit
 
 Before executing the commit, review `git diff --cached` one final time and verify:
 
 1. Every staged change belongs to the selected scope.
-2. The message describes the primary staged change without claiming unstaged work.
+2. The message gives an accurate core mental model of the staged change without
+   requiring file-by-file inspection or claiming unstaged work.
 3. The staged diff still passes the safety review above.
 
 For a subject-only message, run:
@@ -113,9 +137,9 @@ line. Put real line breaks in a long body; never encode them as literal `\n` tex
 
 ```bash
 git commit \
-  -m "Subject line" \
-  -m "Explain why this change was necessary and include any important
-migration detail."
+  -m "Deduplicate retries by request ID" \
+  -m "Retries now treat request ID as the unit of identity. Attempts r1, r1,
+r2 create two jobs instead of three."
 ```
 
 If the commit fails, inspect the error and current status before taking further
