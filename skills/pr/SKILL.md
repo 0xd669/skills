@@ -95,13 +95,16 @@ the remote default branch; do not include its behavior in the body.
 
 Use commit history as evidence, not as the narrative structure. Synthesize the
 final behavior across commits, ignoring intermediate states that the complete PR
-diff supersedes. Check internally that every material branch change is covered,
-but do not expose that coverage as a chronological commit list.
+diff supersedes. Before drafting, separate each material workflow or component
+and map its evidenced actor, trigger, input and time scope, state or output,
+downstream handoffs and failure behavior, and rollout or migration ordering, as
+applicable. Check internally that every material branch change is covered, but
+do not expose that coverage as a chronological commit list.
 
-From the retained evidence, identify the primary before-and-after behavior, the
-reason for the change, important constraints or tradeoffs, and any validation
-actually shown by the repository or commit history. Do not invent test results,
-motivation, or user impact. Use the saved empty lookup result to create, or its
+From the retained evidence, identify the primary before-and-after behavior.
+Include a reason, semantic explanation, impact, constraint, tradeoff, or risk
+only when the evidence supports that exact connection; omit it rather than infer
+it from related changes. Use the saved empty lookup result to create, or its
 single result to update.
 
 ## 3. Compose Grounded Content
@@ -131,8 +134,10 @@ sections. Apply these content rules:
 
 - Lead with the behavioral before-and-after model and why it matters.
 - State the single core intuition that explains most of the PR, then group
-  supporting changes by behavior or reviewer concern. Do not organize the body
-  by commit order, narrate files, or restate every diff hunk.
+  supporting changes by behavior or reviewer concern. When material workflows
+  do not share one evidenced reason or outcome, keep their before-and-after
+  explanations distinct instead of forcing an umbrella narrative. Do not
+  organize the body by commit order, narrate files, or restate every diff hunk.
 - Omit secondary and mechanical edits from `Summary` and `Key Changes` unless
   they alter the mental model or require reviewer action. Report test commands
   and results in `Validation` instead of listing routine test implementation as
@@ -144,8 +149,12 @@ sections. Apply these content rules:
   is clearer.
 - Omit commit hashes and a commit-by-commit log unless the user or a repository
   template explicitly requires them.
-- Report validation only when supported by evidence. Say `Not run` when a
-  required validation section has no evidence; never guess.
+- Report validation only when supported by evidence. Attribute results reported
+  only in commit history, and do not present changed tests or static inspection
+  as passing execution results. Name any material runtime, integration,
+  deployment, migration, or external-service boundaries the reported checks did
+  not exercise. When a required validation section has no evidence of executed
+  checks, state the language-equivalent of `Not run`; never guess.
 - Include migration notes, risks, or reviewer guidance only when the diff
   supports them.
 
