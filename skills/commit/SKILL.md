@@ -99,10 +99,11 @@ When no convention is defined, use these defaults:
   action or a broad benefit. Prefer `Deduplicate retries by request ID` to
   `Update retry handling`. Omit a trailing period and keep the title concise; do
   not exceed 72 characters.
-- **Description (body):** Add one when the title alone does not give an
-  unfamiliar reader the essential before-and-after model. Lead with the core
-  intuition in plain language, usually as one short paragraph. Explain what now
-  happens differently before discussing motivation or implementation details.
+- **Description (body):** Default to one short paragraph whose first sentence
+  states the smallest true transition: `Previously, <old rule>. Now, <new rule>.`
+  Include the deciding unit, direction, or unchanged boundary only when it is
+  part of that transition. Omit the body only when the title itself makes both
+  sides and the governing rule recoverable. Do not summarize files or tests.
 - Use one minimal toy example when concrete input, state, or output makes a
   non-obvious rule faster to understand. For example: `Attempts r1, r1, r2 now
   create two jobs instead of three because request ID defines identity.` Keep
@@ -146,6 +147,10 @@ If the commit fails, inspect the error and current status before taking further
 action. If a hook modified files or the index, review the new staged diff and
 revalidate the message before retrying. Do not retry a failure blindly.
 
-After success, run `git log -1 --format='%h %s'` and `git status --short`. Report
-the commit hash and subject, then mention any remaining unstaged or untracked
-changes. Do not push unless the user separately requested it.
+After success, inspect the complete stored message with
+`git log -1 --format='%B'`. Verify that the title/body separator and body line
+breaks are real line breaks, not literal `\n` text. If the just-created message
+is malformed, amend it using actual line breaks and inspect it again. Then run
+`git log -1 --format='%h %s'` and `git status --short`. Report the commit hash and
+subject, then mention any remaining unstaged or untracked changes. Do not push
+unless the user separately requested it.
