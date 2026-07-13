@@ -9,6 +9,7 @@ A skill earns its place when it repeatedly saves time, reduces errors or decisio
 ## Repository Boundaries
 
 - `skills/<name>/SKILL.md` is the source for each skill. Keep optional `scripts/`, `references/`, `assets/`, and `agents/openai.yaml` beside it only when they serve the skill directly.
+- `.agents/skills/<name>` and `.claude/skills/<name>` are tracked relative symbolic links to `../../skills/<name>` so both runtimes use the source skill directly. Whenever a skill is added, renamed, or removed, update both links in the same change; do not copy skill files into these runtime directories.
 - `README.md` is the user-facing catalog and installation guide.
 - `.claude-plugin/` contains Claude Code distribution metadata. Change it only when packaging, identity, installation, or release metadata changes; keep it synchronized with the README.
 - `experiments/` contains local evaluation artifacts and is not committed.
