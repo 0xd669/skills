@@ -15,10 +15,11 @@ allowed-tools: >-
 
 Create or update one GitHub pull request for the current branch. Treat the PR as
 durable knowledge transfer: explain the changed behavior and its reason, not a
-file inventory. Follow explicit user instructions and applicable repository
-guidance before the defaults below. Write the title in English and write the body
-and user-facing response in the language required by repository guidance, or
-otherwise in the user's language.
+file inventory. Follow explicit user instructions first, then applicable
+repository guidance, before the defaults below. Write the title in English. Write
+the body in the language the user explicitly requests, or otherwise in the
+language of the user's request; this skill does not impose a fixed body language.
+Write the user-facing response in the user's language.
 
 ## 1. Inspect and Guard
 
@@ -86,11 +87,16 @@ git diff <comparison-ref>...HEAD
 ```
 
 Treat these outputs as the exclusive PR change set when selecting body depth,
-composing claims, checking commit coverage, and reporting commit and file counts.
+composing claims, checking change coverage, and reporting commit and file counts.
 Throughout the remaining steps, “branch commits” means exactly the commits
 returned by `git log <comparison-ref>..HEAD`. A commit reachable from
 `<comparison-ref>` is base history, not a PR change, even when it is absent from
-the remote default branch; do not include its hash or behavior in the body.
+the remote default branch; do not include its behavior in the body.
+
+Use commit history as evidence, not as the narrative structure. Synthesize the
+final behavior across commits, ignoring intermediate states that the complete PR
+diff supersedes. Check internally that every material branch change is covered,
+but do not expose that coverage as a chronological commit list.
 
 From the retained evidence, identify the primary before-and-after behavior, the
 reason for the change, important constraints or tradeoffs, and any validation
@@ -117,15 +123,27 @@ measures disagree:
 | Level | Threshold | Generated sections |
 |-------|-----------|--------------------|
 | Simple | 1-2 commits and at most 3 files | Summary, Changes |
-| Standard | 3-10 commits or 4-10 files | Summary, Key Changes, Validation, Commit Log |
-| Complex | 11+ commits or 11+ files | Summary, themed Key Changes, Validation, Review Notes, Commit Log |
+| Standard | 3-10 commits or 4-10 files | Summary, Key Changes, Validation |
+| Complex | 11+ commits or 11+ files | Summary, themed Key Changes, Validation, Review Notes |
 
 Keep the body proportional even when a repository template adds required
 sections. Apply these content rules:
 
 - Lead with the behavioral before-and-after model and why it matters.
-- Group related behavior; do not narrate files or restate every diff hunk.
-- Include every commit's short hash and subject in `Changes` or `Commit Log`.
+- State the single core intuition that explains most of the PR, then group
+  supporting changes by behavior or reviewer concern. Do not organize the body
+  by commit order, narrate files, or restate every diff hunk.
+- Omit secondary and mechanical edits from `Summary` and `Key Changes` unless
+  they alter the mental model or require reviewer action. Report test commands
+  and results in `Validation` instead of listing routine test implementation as
+  a key change.
+- Use one minimal toy example when concrete input, state, or output makes a
+  non-obvious rule faster to understand. For example: `Requests r1, r1, r2 used
+  to create three jobs; they now create two because request ID defines identity.`
+  Keep the behavior faithful to the diff, and do not force an example when prose
+  is clearer.
+- Omit commit hashes and a commit-by-commit log unless the user or a repository
+  template explicitly requires them.
 - Report validation only when supported by evidence. Say `Not run` when a
   required validation section has no evidence; never guess.
 - Include migration notes, risks, or reviewer guidance only when the diff
@@ -156,7 +174,8 @@ with `draft/` or `wip/`. Updating the body must preserve the existing draft stat
 Before any `gh pr create` or `gh pr edit`, verify that:
 
 1. The create title satisfies the language, length, verb, and ticket rules.
-2. The body matches the chosen depth and contains every branch commit hash.
+2. The body matches the chosen depth, leads with the core intuition, and covers
+   every material branch change without relying on a chronological commit list.
 3. Every factual claim is grounded in the inspected diff, history, guidance, or
    template.
 4. Existing content outside the ownership markers is unchanged.
