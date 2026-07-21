@@ -9,8 +9,8 @@ description: >-
   prompt bodies, chat templates, structured-output prompts, RAG context
   templates, and prompt strings embedded in code. Also use when editing any
   file whose primary content is LLM instructions. Do not use for skill
-  creation, packaging, or evaluation workflows -- that is a skill-creation
-  job; this skill improves the prompt text itself.
+  scaffolding, packaging, or evaluation runs; rewriting an existing skill's
+  prompt body is in scope.
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion
 ---
 
