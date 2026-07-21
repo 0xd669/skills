@@ -4,12 +4,13 @@ description: >-
   Writes, rewrites, diagnoses, and improves any LLM prompt with minimal,
   high-signal edits. Use when the user wants to create a new prompt from
   scratch, review or fix a prompt that produces poor output, simplify or
-  tighten instructions, restructure a long prompt, port a prompt between
-  models, or expand an existing prompt. Covers system prompts, agent
-  instructions, CLAUDE.md rules, SKILL.md prompt bodies, chat templates,
-  structured-output prompts, RAG context templates, and prompt strings embedded
-  in code. Also use when editing any file whose primary content is LLM
-  instructions.
+  tighten instructions, restructure a long prompt, or expand an existing
+  prompt. Covers system prompts, agent instructions, CLAUDE.md rules, SKILL.md
+  prompt bodies, chat templates, structured-output prompts, RAG context
+  templates, and prompt strings embedded in code. Also use when editing any
+  file whose primary content is LLM instructions. Do not use for skill
+  creation, packaging, or evaluation workflows -- that is a skill-creation
+  job; this skill improves the prompt text itself.
 allowed-tools: Read Write Edit Glob Grep AskUserQuestion
 ---
 
