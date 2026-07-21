@@ -100,10 +100,14 @@ When no convention is defined, use these defaults:
   `Update retry handling`. Omit a trailing period and keep the title concise; do
   not exceed 72 characters.
 - **Description (body):** Default to one short paragraph whose first sentence
-  states the smallest true transition: `Previously, <old rule>. Now, <new rule>.`
+  states the change as a delta a reader can verify: what held before versus
+  what holds now. `Previously, <old rule>. Now, <new rule>.` is one natural
+  shape, not a required one. When no meaningful prior behavior exists (a new
+  capability, file, or first version), state the new rule directly; never
+  write a contrast whose "previously" clause merely negates the "now" clause.
   Include the deciding unit, direction, or unchanged boundary only when it is
-  part of that transition. Omit the body only when the title itself makes both
-  sides and the governing rule recoverable. Do not summarize files or tests.
+  part of that delta. Omit the body only when the title itself makes the
+  change recoverable. Do not summarize files or tests.
 - Use one minimal toy example when concrete input, state, or output makes a
   non-obvious rule faster to understand. For example: `Attempts r1, r1, r2 now
   create two jobs instead of three because request ID defines identity.` Keep

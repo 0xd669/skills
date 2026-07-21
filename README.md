@@ -27,7 +27,7 @@ Then invoke `commit`, `pr`, or `prompt-doctor` using your agent's skill syntax.
 
 Turns the right working-tree changes into one coherent commit while leaving unrelated work untouched.
 
-- Writes messages that explain the behavior change, not the file list. The title names the changed rule; when needed, the body states the before-and-after transition.
+- Writes messages that explain the behavior change, not the file list. The title names the changed rule; when needed, the body states what changed as a delta a reader can verify.
 - Groups changes by purpose and commits a single logical change. Unrelated WIP stays untouched.
 - Stages only with explicit pathspecs, never with `git add -A`.
 - Stops on suspected secrets, unintended `.env` files, and conflict markers; flags leftover debug statements before they enter the commit.
