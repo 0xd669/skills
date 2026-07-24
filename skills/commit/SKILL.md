@@ -98,7 +98,11 @@ When no convention is defined, use these defaults:
   concept and its changed behavior or governing rule, not merely the editing
   action or a broad benefit. Prefer `Deduplicate retries by request ID` to
   `Update retry handling`. Omit a trailing period and keep the title concise; do
-  not exceed 72 characters.
+  not exceed 72 characters. Exclude conventional-commit types/scopes (`feat:`,
+  `fix(x):`), ticket or issue IDs, and branch names. Recent commits containing
+  such a prefix are not sufficient reason to add one; only an explicit written
+  convention (e.g. `CONTRIBUTING.md`, a commit template, a commitlint config)
+  does.
 - **Description (body):** Default to one short paragraph whose first sentence
   states the change as a delta a reader can verify: what held before versus
   what holds now. `Previously, <old rule>. Now, <new rule>.` is one natural
